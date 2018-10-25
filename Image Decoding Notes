@@ -1,0 +1,79 @@
+Image Decoding Notes:
+
+
+b) Here's the key of the hide function:
+
+for row in range(height):
+        for col in range(width):
+            if index + 3 <= len_message_bits :
+
+ ----> It means, we're looping through each column within every row - we're getting the rgb of each pixel - the question is what's done to the values of each pixel. It looks like we're passing the rgb values to other functions on the page.
+
+c) For the message: "Hidden message!", the len_message_bits (the binary form of the message) =144
+
+For the penguin image: npixels=86387
+
+d) Here are some notes about what happens to the rgb values once we have them:
+
+('within rgb loop of hide function, before the ran_set_bit conversions, the pixels = ', (192, 255, 255))
+('ran set_bit', 192, 1, False)
+('v = ', 192)
+('ran set_bit', 255, 1, False)
+('v = ', 253)
+('ran set_bit', 255, 1, True)
+('v = ', 255)
+
+
+Each 'r','g'and 'b' is getting passed to the 'ran_set_bit' function (it's a set containing the pixel's color). v is the return value. In 1 of the above 3 cases, the 'r'g'or 'b' value is edited. 
+
+e) What values are we passing to the set_bit function?
+
+example: g = set_bit(g, bit, ('1' == message_bits[index+1]))
+
+Answer: 
+
+----->> g = 255 (for example - i.e. any r-g-or-b value)
+
+--->> bit = hidden_bits_order.next() % 8
+(The 'bit' variable is the next element within the fibonacci sequence, modulo 8 (divided by 8 and return the remainder - that's why bit always equals 0,1,2,3,5,7 when passed to set_bit). Within the set_bit function this 'remainder' is actually called the 'index' - because it represents a value based on the index of the 'r'g-or-b value
+
+---> ('1' == message_bits[index+1])
+
+This third parameter will either return true or false: depending on whether the given index (0-143) of the message_bits string equals zero or one (50-50%chance)
+
+Explanation: Each RGB set has a beginning index (for example: 135,138,141) (each 'r'or'g' or 'b' have their own index) - In total, for the penguin image, we have 144 elements within the index (id's) (0-143) - corresponding to the 144 characters within the message_bits variable (zeros and ones).
+
+In short, we're asking (for the 3rd parameter): does this corresponding indexed character of the message (corresponding to the indexed character of the pixel) equal 1? If so, do an extra masking action within the set_bit function.
+
+f) Here's what the message_bits value is (its the post-conversion value of the original value passed by the parser) 
+
+001100010011010100111010010010000110100101100100011001000110010101101110001000000110110101100101011100110111001101100001011001110110010100100001
+
+h) NEXT: UNDERSTANDING THE SET_BIT FUNCTION
+
+i) Summary: The answer is hidden within the rgb values of the new image () 
+
+j) What are the conditions that determine whether an rgb value will get edited before it's returned to the hide() function?
+
+Answer: The first thing we do within the set_bits function is:
+
+example: mask = 1 << index 
+
+The 'index' variable equals next element within the fibonacci sequence, modulo 8 - it represents a value based on the index of the 'r'g-or-b value (0-143)
+
+HOW TO REVERSE ENGINEER (use the '>>' operator to undue whatever has been done)
+
+Here's the full set_bit function:
+
+
+def set_bit(v, index, x):
+  mask = 1 << index
+  v = v&(~mask)
+  if x: # Don't know whether x is true or false 
+    v = v|mask
+  return v
+
+Some questions: what's the value of mask? ah - this can be computed because we have the value of the index.
+
+
+
